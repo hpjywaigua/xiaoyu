@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:gravity="center_horizontal"
+	android:orientation="vertical"
+	android:background="@drawable/pubg_bg">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:gravity="center|center_vertical">
+
+		<ImageView
+			android:layout_gravity="center"
+			android:layout_width="170.0dip"
+			android:layout_height="170.0dip"
+			android:src="@drawable/Xero"
+			android:id="@+id/logo"
+			android:layout_marginLeft="10dp"
+			android:alpha="0.8"
+			android:layout_marginTop="250dp"/>
+
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:layout_gravity="bottom"
+			android:gravity="center">
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Text"
+				android:textColor="#ffffff"
+				android:id="@+id/dev"
+				android:layout_marginBottom="5dp"
+				android:textSize="16sp"/>
+
+			<ProgressBar
+				style="@android:style/Widget.ProgressBar.Horizontal"
+				android:layout_width="fill_parent"
+				android:layout_height="10.0dip"
+				android:id="@+id/progressBar"
+				android:progressTint="@color/main"
+				android:progressBackgroundTint="#ff3a3436"/>
+
+		</LinearLayout>
+
+	</LinearLayout>
+
+</LinearLayout>
+

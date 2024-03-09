@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">小宇插件</string>
+    <string name="day" translatable="false">一天</string>
+    <string name="hours" translatable="false">小时</string>
+    <string name="minutes" translatable="false">分钟</string>
+    <string name="second" translatable="false">Second</string>
+	<string name="ActivityLoginGameID">游戏列表</string>
+    <string name="ActivityLoginGameIDPUBG">PUBG MOBILE</string>
+    <string name="ActivityLoginGameKey">访问卡密</string>
+    <string name="ActivityLoginGameResultDevice">卡密已在其他设备上登录请等待三个小时</string>
+    <string name="ActivityLoginGameResultInvalid">没有这个卡密</string>
+    <string name="ActivityLoginGameResultSubscription">你所使用的卡密已到期</string>
+    <string name="ActivityLoginGameResultSuccess">你已登录</string>
+    <string name="ActivityLoginGameSubmit">登录</string>
+    <string name="ActivityLoginInstagram">分享</string>
+    <string name="ActivityLoginTelegram">电报</string>
+    <string name="ActivityLoginWebsite">网站</string>
+</resources>

@@ -1,0 +1,179 @@
+#include "curl/curl.h"
+#include "obfuscate.h"
+#include "Tools.h"
+#include "json.hpp"
+#include "Includes.h"
+
+using json = nlohmann::ordered_json;
+bool bValid = false, lolo = false;
+std::string g_Auth, g_Token,EXP;
+bool check;
+bool bear;
+time_t rng = 0;
+
+const char *GetAndroidID(JNIEnv *env, jobject context) {
+    jclass contextClass = env->FindClass("android/content/Context");
+    jmethodID getContentResolverMethod = env->GetMethodID(contextClass,"getContentResolver","()Landroid/content/ContentResolver;");
+    jclass settingSecureClass = env->FindClass("android/provider/Settings$Secure");
+    jmethodID getStringMethod = env->GetStaticMethodID(settingSecureClass,"getString", "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;");
+
+    auto obj = env->CallObjectMethod(context, getContentResolverMethod);
+    auto str = (jstring) env->CallStaticObjectMethod(settingSecureClass, getStringMethod, obj,env->NewStringUTF("android_id"));
+    return env->GetStringUTFChars(str, 0);
+}
+
+const char *GetDeviceModel(JNIEnv *env) {
+    jclass buildClass = env->FindClass("android/os/Build");
+    jfieldID modelId = env->GetStaticFieldID(buildClass, "MODEL","Ljava/lang/String;");
+
+    auto str = (jstring) env->GetStaticObjectField(buildClass, modelId);
+    return env->GetStringUTFChars(str, 0);
+}
+
+const char *GetDeviceBrand(JNIEnv *env) {
+    jclass buildClass = env->FindClass("android/os/Build");
+    jfieldID modelId = env->GetStaticFieldID(buildClass, "BRAND","Ljava/lang/String;");
+
+    auto str = (jstring) env->GetStaticObjectField(buildClass, modelId);
+    return env->GetStringUTFChars(str, 0);
+}
+
+const char *GetPackageName(JNIEnv *env, jobject context) {
+    jclass contextClass = env->FindClass("android/content/Context");
+    jmethodID getPackageNameId = env->GetMethodID(contextClass, "getPackageName","()Ljava/lang/String;");
+
+    auto str = (jstring) env->CallObjectMethod(context, getPackageNameId);
+    return env->GetStringUTFChars(str, 0);
+}
+
+const char *GetDeviceUniqueIdentifier(JNIEnv *env, const char *uuid) {
+    jclass uuidClass = env->FindClass("java/util/UUID");
+
+    auto len = strlen(uuid);
+
+    jbyteArray myJByteArray = env->NewByteArray(len);
+    env->SetByteArrayRegion(myJByteArray, 0, len, (jbyte *) uuid);
+
+    jmethodID nameUUIDFromBytesMethod = env->GetStaticMethodID(uuidClass,"nameUUIDFromBytes","([B)Ljava/util/UUID;");
+    jmethodID toStringMethod = env->GetMethodID(uuidClass, "toString","()Ljava/lang/String;");
+
+    auto obj = env->CallStaticObjectMethod(uuidClass, nameUUIDFromBytesMethod, myJByteArray);
+    auto str = (jstring) env->CallObjectMethod(obj, toStringMethod);
+    return env->GetStringUTFChars(str, 0);
+}
+
+struct MemoryStruct {
+    char *memory;
+    size_t size;
+};
+
+static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+    struct MemoryStruct *mem = (struct MemoryStruct *) userp;
+
+    mem->memory = (char *) realloc(mem->memory, mem->size + realsize + 1);
+    if (mem->memory == NULL) {
+        return 0;
+    }
+
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
+
+    return realsize;
+}
+
+jstring native_Check(JNIEnv *env, jclass clazz, jobject mContext, jstring mUserKey) {
+    auto user_key = env->GetStringUTFChars(mUserKey, 0);
+    std::string hwid = user_key;
+    hwid += GetAndroidID(env, mContext);
+    hwid += GetDeviceModel(env);
+    hwid += GetDeviceBrand(env);
+    std::string UUID = GetDeviceUniqueIdentifier(env, hwid.c_str());
+    std::string errMsg;
+    struct MemoryStruct chunk{};
+    chunk.memory = (char *) malloc(1);
+    chunk.size = 0;
+
+    CURL *curl;
+    CURLcode res;
+    curl = curl_easy_init();
+  if (curl) {
+        std::string url = OBFUSCATE("https://wcsbm.cn/connect");
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, /*POST*/ StrEnc(",IL=", "\x7C\x06\x1F\x69", 4).c_str());
+        curl_easy_setopt(curl, CURLOPT_URL,url.c_str());
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, /*https*/ StrEnc("!mLBO", "\x49\x19\x38\x32\x3C", 5).c_str());
+        struct curl_slist *headers = NULL;
+        headers = curl_slist_append(headers, /*Content-Type: application/x-www-form-urlencoded*/ StrEnc("@;Ls\\(KP4Qrop`b#d3094/r1cf<c<=H)AiiBG6i|Ta66s2[", "\x03\x54\x22\x07\x39\x46\x3F\x7D\x60\x28\x02\x0A\x4A\x40\x03\x53\x14\x5F\x59\x5A\x55\x5B\x1B\x5E\x0D\x49\x44\x4E\x4B\x4A\x3F\x04\x27\x06\x1B\x2F\x6A\x43\x1B\x10\x31\x0F\x55\x59\x17\x57\x3F", 47).c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+        char data[4096];
+        sprintf(data, /*game=PUBG&user_key=%s&serial=%s*/ StrEnc("qu2yXK,YkJyGD@ut0.u~Nb'5(:.:chK", "\x16\x14\x5F\x1C\x65\x1B\x79\x1B\x2C\x6C\x0C\x34\x21\x32\x2A\x1F\x55\x57\x48\x5B\x3D\x44\x54\x50\x5A\x53\x4F\x56\x5E\x4D\x38", 31).c_str(), userKey, UUID.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
+
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+        res = curl_easy_perform(curl);
+        if (res == CURLE_OK) {
+            try {
+                json result = json::parse(chunk.memory);
+                if (result[/*status*/ StrEnc("(>_LBm", "\x5B\x4A\x3E\x38\x37\x1E", 6).c_str()] == true) {
+                    //   std::string token = result[/*data*/ StrEnc("fAVA", "\x02\x20\x22\x20", 4).c_str()][/*token*/ StrEnc("{>3Lr", "\x0F\x51\x58\x29\x1C", 5).c_str()].get<std::string>();
+                    expiredDate = result[/*data*/ StrEnc("fAVA", "\x02\x20\x22\x20", 4).c_str()][/*rng*/ StrEnc("+n,", "\x59\x00\x4B", 3).c_str()].get<time_t>();
+                    credit = result["data"]["credit"].get<std::string>();
+                    //	modstatus = result["data"]["name2"].get<std::string>();
+                    modname = result["data"]["modname"].get<std::string>();
+                    token = result["data"]["token"].get<std::string>();
+                    if (expiredDate + 30 > time(0)) {
+                        std::string auth = /*PUBG*/ StrEnc("Q*) ", "\x01\x7F\x6B\x67", 4).c_str();;
+                        auth += "-";
+                        auth += userKey;
+                        auth += "-";
+                        auth += UUID;
+                        auth += "-";
+                        std::string license = OBFUSCATE("Vm8Lk7Uj2JmsjCPVPVjrLa7zgfx3uz9E");
+                        auth += license.c_str();
+                        std::string outputAuth = Tools::CalcMD5(auth);
+
+                        JatinGamer404 = true;
+
+                        if (JatinGamer404) {
+                            pthread_t t;
+                        }
+                    }
+                } else {
+                    errMsg = result[/*reason*/ StrEnc("LW(3(c", "\x3E\x32\x49\x40\x47\x0D", 6).c_str()].get<std::string>();
+                }
+            } catch (json::exception &e) {
+                errMsg = "{";
+                errMsg += e.what();
+                errMsg += "}\n{";
+                errMsg += chunk.memory;
+                errMsg += "}";
+            }
+        } else {
+            errMsg = curl_easy_strerror(res);
+        }
+    }
+    curl_easy_cleanup(curl);
+    return JatinGamer404 ? env->NewStringUTF(/*OK*/ StrEnc("8q", "\x77\x3A", 2).c_str()) : env->NewStringUTF(errMsg.c_str());
+}
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_jesse_dxy_FloatingActivity_getuid(JNIEnv *env, jobject thiz ) { //61ed377e85d386a8dfee6b864bd85b0bfaa5af81
+    return env->NewStringUTF(OBFUSCATE_KEY("61ed377e85d386a8dfee6b864bd85b0bfaa5af81",'~')); //ab0b45099de886067be3e37d3c4dfd384b90a6a2 // ab0b45099de886067be3e37d3c4dfd384b90a6a2
+    }
+
+void native_Init(JNIEnv *env, jclass clazz, jobject mContext) {
+    jstring pMsg = env->NewStringUTF("Welcome");
+    jclass toastClass = env->FindClass("android/widget/Toast");
+    jmethodID makeTextMethod = env->GetStaticMethodID(toastClass, "makeText","(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;");
+    jobject toastObj = env->CallStaticObjectMethod(toastClass, makeTextMethod, mContext, pMsg, 0);
+    jmethodID methodShow = env->GetMethodID(toastClass, "show","()V");
+    env->CallVoidMethod(toastObj, methodShow);
+
+}
